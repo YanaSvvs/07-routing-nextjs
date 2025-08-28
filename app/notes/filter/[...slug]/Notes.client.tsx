@@ -1,37 +1,36 @@
 'use client';
-import { SearchBox } from '@/components/SearchBox/SearchBox';
-import css from './NotesPage.module.css';
-import { fetchNotes } from '@/lib/api';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+
 import { useEffect, useState } from 'react';
-import Pagination from '@/components/Pagination/Pagination';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useDebouncedCallback } from 'use-debounce';
+import { Toaster } from 'react-hot-toast';
+
+import { SearchBox } from '@/components/SearchBox/SearchBox';
 import { Loader } from '@/components/Loader/Loader';
 import { ErrorMessage } from '@/components/ErrorMessage/ErrorMessage';
 import { ErrorMessageEmpty } from '@/components/ErrorMessageEmpty/ErrorMessageEmpty';
 import { NoteList } from '@/components/NoteList/NoteList';
 import { Modal } from '@/components/Modal/Modal';
 import { NoteForm } from '@/components/NoteForm/NoteForm';
-import { useDebounce } from 'use-debounce';
-import { Toaster } from 'react-hot-toast';
-import { Note } from '@/types/note';
+import Pagination from '@/components/Pagination/Pagination';
+
+import { fetchNotes } from '@/lib/api';
+import { Note } from '@/types/note'; 
+import css from './NotesPage.module.css';
 
 interface NotesClientProps {
   initialData: {
     notes: Note[];
     totalPages: number;
   };
-  initialTag: string;
+  initialTag: string; 
 }
 
-export default function NotesClient({
-  initialData,
-  initialTag,
-}: NotesClientProps) {
+export default function NotesClient({ initialData, initialTag }: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [query, setQuery] = useState('');
-  const [debouncedQuery] = useDebounce(query, 1000);
-  const [tag, setTag] = useState(initialTag);
-  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [tag, setTag] = useState(initialTag); 
 
   useEffect(() => {
     setTag(initialTag);
@@ -39,50 +38,56 @@ export default function NotesClient({
   }, [initialTag]);
 
   const { data, isError, isLoading, isSuccess } = useQuery({
-    queryKey: ['notes', debouncedQuery, currentPage, tag],
-    queryFn: () => fetchNotes(debouncedQuery, currentPage, tag),
+    queryKey: ['notes', searchQuery, currentPage, tag], 
+    queryFn: () => fetchNotes(searchQuery, currentPage, tag), 
     placeholderData: keepPreviousData,
-    initialData,
+    initialData, 
     refetchOnMount: false,
   });
 
+  const toggleModal = () => setIsModalOpen((prev) => !prev);
   const totalPages = data?.totalPages ?? 0;
+  const notes = data?.notes ?? [];
 
-  const handleCreateNote = () => {
-    setIsOpenModal(true);
-  };
-
-  const handleCloseModal = () => setIsOpenModal(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+  const changeSearchQuery = useDebouncedCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentPage(1);
-  };
+    setSearchQuery(e.target.value);
+  }, 1000);
+
+  const handleCreateNote = toggleModal;
+  const handleCloseModal = toggleModal;
+
   return (
     <div className={css.app}>
-      <div className={css.toolbar}>
-        <SearchBox value={query} onChange={handleChange} />
-        {isSuccess && totalPages > 1 && (
-          <Pagination
-            page={currentPage}
-            total={totalPages}
-            onChange={setCurrentPage}
-          />
-        )}
-        <button onClick={handleCreateNote} className={css.button}>
-          Create note +
-        </button>
-      </div>
-      {isLoading && <Loader />}
-      {isError && <ErrorMessage />}
-      <Toaster position="top-right" />
-      {isSuccess && data?.notes.length === 0 && <ErrorMessageEmpty />}
-      {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
-      {isOpenModal && (
-        <Modal onClose={handleCloseModal}>
-          <NoteForm onClose={handleCloseModal} />
-        </Modal>
-      )}
+      <main>
+        <section>
+          <header className={css.toolbar}>
+            <SearchBox value={searchQuery} onChange={changeSearchQuery} /> {}
+            {isSuccess && totalPages > 1 && (
+              <Pagination
+                page={currentPage}
+                total={totalPages}
+                onChange={setCurrentPage}
+              />
+            )}
+            <button onClick={handleCreateNote} className={css.button}>
+              Create note +
+            </button>
+          </header>
+
+          <Toaster position="top-right" />
+          {isLoading && <Loader />}
+          {isError && <ErrorMessage />}
+          {isSuccess && notes.length === 0 && <ErrorMessageEmpty />}
+          {notes.length > 0 && <NoteList notes={notes} />}
+
+          {isModalOpen && (
+            <Modal onClose={handleCloseModal}>
+              <NoteForm onClose={handleCloseModal} />
+            </Modal>
+          )}
+        </section>
+      </main>
     </div>
   );
 }
