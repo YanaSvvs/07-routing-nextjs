@@ -15,22 +15,19 @@ import { NoteForm } from '@/components/NoteForm/NoteForm';
 import Pagination from '@/components/Pagination/Pagination';
 
 import { fetchNotes } from '@/lib/api';
-import { Note } from '@/types/note'; 
+import { Note } from '@/types/note';
 import css from './NotesPage.module.css';
 
+
 interface NotesClientProps {
-  initialData: {
-    notes: Note[];
-    totalPages: number;
-  };
-  initialTag: string; 
+  initialTag: string;
 }
 
-export default function NotesClient({ initialData, initialTag }: NotesClientProps) {
+export default function NotesClient({ initialTag }: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [tag, setTag] = useState(initialTag); 
+  const [tag, setTag] = useState(initialTag);
 
   useEffect(() => {
     setTag(initialTag);
@@ -38,10 +35,9 @@ export default function NotesClient({ initialData, initialTag }: NotesClientProp
   }, [initialTag]);
 
   const { data, isError, isLoading, isSuccess } = useQuery({
-    queryKey: ['notes', searchQuery, currentPage, tag], 
-    queryFn: () => fetchNotes(searchQuery, currentPage, tag), 
+    queryKey: ['notes', searchQuery, currentPage, tag],
+    queryFn: () => fetchNotes(searchQuery, currentPage, tag),
     placeholderData: keepPreviousData,
-    initialData, 
     refetchOnMount: false,
   });
 
@@ -62,7 +58,7 @@ export default function NotesClient({ initialData, initialTag }: NotesClientProp
       <main>
         <section>
           <header className={css.toolbar}>
-            <SearchBox value={searchQuery} onChange={changeSearchQuery} /> {}
+            <SearchBox value={searchQuery} onChange={changeSearchQuery} />
             {isSuccess && totalPages > 1 && (
               <Pagination
                 page={currentPage}
