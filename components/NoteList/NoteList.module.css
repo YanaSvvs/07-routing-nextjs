@@ -41,7 +41,7 @@
     /* Для старих версій */
     display: -moz-box;
     /* Для Firefox */
-    display: box;
+    display: flex;
     line-clamp: 3;
 }
 
