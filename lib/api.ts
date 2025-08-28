@@ -6,9 +6,10 @@ interface NotesHttpResponse {
     totalPages: number,
 }
 
-export const fetchNotes = async (search: string, page:number): Promise<NotesHttpResponse>=> {
+export const fetchNotes = async (search: string, page:number,tag:string): Promise<NotesHttpResponse>=> {
     const params = {
-        ...(search && { search}),
+        ...(search && { search }),
+        ...(tag&&{tag}),
         page,
         perPage:12,
     };
@@ -35,7 +36,6 @@ export const createNote = async (note: FormValues):Promise<Note> => {
       return response.data;
   };
 
-
 export const deleteNote = async (id: string): Promise<Note> => {
      const headers = {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN }`,
@@ -43,9 +43,7 @@ export const deleteNote = async (id: string): Promise<Note> => {
     const response = await axios.delete<Note>(
         `https://notehub-public.goit.study/api/notes/${id}`,{headers}
   );
-
-    return response.data;
-    
+    return response.data; 
 }
 
 export const fetchNoteById = async (id: string): Promise<Note> => {

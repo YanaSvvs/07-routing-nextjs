@@ -20,13 +20,11 @@ interface NotesClientProps {
     notes: Note[];
     totalPages: number;
   };
-
   initialTag: string;
 }
 
 export default function NotesClient({
   initialData,
-
   initialTag,
 }: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
