@@ -15,9 +15,8 @@ import { NoteForm } from '@/components/NoteForm/NoteForm';
 import Pagination from '@/components/Pagination/Pagination';
 
 import { fetchNotes } from '@/lib/api';
-import { Note } from '@/types/note';
+//import { Note } from '@/types/note';
 import css from './NotesPage.module.css';
-
 
 interface NotesClientProps {
   initialTag: string;
