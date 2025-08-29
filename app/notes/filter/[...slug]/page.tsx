@@ -3,17 +3,18 @@ import NotesClient from './Notes.client';
 import { fetchNotes } from '@/lib/api';
 
 interface NotesPageProps {
-  params: {
+  params: Promise<{
     slug: string[]; 
-  };
+  }>;
   searchParams?: { [key: string]: string | string[] | undefined }; 
 }
 
 export default async function NotesPage({ params }: NotesPageProps) {
+  const resolvedParams = await params;
   
   const queryClient = new QueryClient(); 
 
-  const tag = params.slug?.[0] || 'all'; 
+  const tag = resolvedParams.slug?.[0] || 'all'; 
   const queryKey = ['notes', '', 1, tag]; 
 
   await queryClient.prefetchQuery({
@@ -24,9 +25,7 @@ export default async function NotesPage({ params }: NotesPageProps) {
   const dehydratedState = dehydrate(queryClient);
 
   return (
-  
     <HydrationBoundary state={dehydratedState}>
-      {}
       <NotesClient initialTag={tag} /> 
     </HydrationBoundary>
   );
